@@ -1,5 +1,5 @@
 from pydantic import BaseModel
-from typing import Optional
+from typing import Optional, List
 from datetime import datetime
 
 class MedicationBase(BaseModel):
@@ -27,7 +27,7 @@ class UserCreate(UserBase):
 
 class User(UserBase):
     id: int
-    medications: list[Medication] = []
+    medications: List[Medication] = []
 
     class Config:
         from_attributes = True
