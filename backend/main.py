@@ -87,7 +87,7 @@ def read_users_me(current_user: models.User = Depends(get_current_user)):
 
 @app.post("/medications/", response_model=schemas.Medication)
 def create_medication(medication: schemas.MedicationCreate, db: Session = Depends(get_db), current_user: models.User = Depends(get_current_user)):
-    db_med = models.Medication(**medication.model_dump(), owner_id=current_user.id)
+    db_med = models.Medication(**medication.dict(), owner_id=current_user.id)
     db.add(db_med)
     db.commit()
     db.refresh(db_med)
