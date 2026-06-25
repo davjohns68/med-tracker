@@ -45,7 +45,7 @@ async def check_medications_due():
 
 @app.on_event("startup")
 async def startup_event():
-    asyncio.create_task(check_medications_due())
+    asyncio.ensure_future(check_medications_due())
 
 app.add_middleware(
     CORSMiddleware,
