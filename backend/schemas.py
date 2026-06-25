@@ -15,6 +15,7 @@ class Medication(MedicationBase):
     owner_id: int
     last_taken: Optional[datetime] = None
     next_due: Optional[datetime] = None
+    last_notified: Optional[datetime] = None
 
     class Config:
         from_attributes = True
@@ -22,9 +23,13 @@ class Medication(MedicationBase):
 
 class UserBase(BaseModel):
     username: str
+    discord_webhook: Optional[str] = None
 
 class UserCreate(UserBase):
     password: str
+
+class UserUpdate(BaseModel):
+    discord_webhook: Optional[str] = None
 
 class User(UserBase):
     id: int

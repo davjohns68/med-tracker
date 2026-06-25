@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { getMedications } from '../api';
 import MedicationList from './MedicationList';
 import CalendarView from './CalendarView';
+import Settings from './Settings';
 import { LogOut, Activity } from 'lucide-react';
 
 export default function Dashboard({ onLogout }) {
@@ -35,7 +36,10 @@ export default function Dashboard({ onLogout }) {
       </header>
 
       <div className="dashboard-grid">
-        <MedicationList medications={medications} refreshMeds={fetchMeds} />
+        <div style={{ display: 'flex', flexDirection: 'column' }}>
+          <MedicationList medications={medications} refreshMeds={fetchMeds} />
+          <Settings />
+        </div>
         <CalendarView medications={medications} />
       </div>
     </div>

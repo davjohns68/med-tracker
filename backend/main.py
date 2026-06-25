@@ -6,6 +6,8 @@ from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 from jose import JWTError, jwt
+import asyncio
+import notifier
 
 import models, schemas, auth
 from database import engine, SessionLocal
@@ -13,6 +15,37 @@ from database import engine, SessionLocal
 models.Base.metadata.create_all(bind=engine)
 
 app = FastAPI(title="Medication Tracker API")
+
+async def check_medications_due():
+    while True:
+        try:
+            db = SessionLocal()
+            now = datetime.now(timezone.utc)
+            
+            # Find due medications that haven't been notified for this cycle
+            meds = db.query(models.Medication).join(models.User).filter(
+                models.Medication.next_due <= now,
+                (models.Medication.last_notified == None) | (models.Medication.last_notified < models.Medication.next_due)
+            ).all()
+
+            for med in meds:
+                if med.owner.discord_webhook:
+                    notifier.send_discord_notification(
+                        med.owner.discord_webhook,
+                        f"🤘 **Time to take your meds!**\\nIt's time for **{med.name}** ({med.dosage}). Rock on!"
+                    )
+                med.last_notified = now
+                db.commit()
+            
+            db.close()
+        except Exception as e:
+            print(f"Background task error: {e}")
+        
+        await asyncio.sleep(60)
+
+@app.on_event("startup")
+async def startup_event():
+    asyncio.create_task(check_medications_due())
 
 app.add_middleware(
     CORSMiddleware,
@@ -83,6 +116,14 @@ def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(), db:
 
 @app.get("/users/me/", response_model=schemas.User)
 def read_users_me(current_user: models.User = Depends(get_current_user)):
+    return current_user
+
+@app.put("/users/me/", response_model=schemas.User)
+def update_user_me(user_update: schemas.UserUpdate, db: Session = Depends(get_db), current_user: models.User = Depends(get_current_user)):
+    if user_update.discord_webhook is not None:
+        current_user.discord_webhook = user_update.discord_webhook
+    db.commit()
+    db.refresh(current_user)
     return current_user
 
 @app.post("/medications/", response_model=schemas.Medication)

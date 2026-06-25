@@ -58,3 +58,14 @@ export const takeMedication = async (medId) => {
   if (!res.ok) throw new Error("Failed to update medication");
   return res.json();
 };
+
+export const updateProfile = async (discord_webhook) => {
+  const res = await fetch(`${API_URL}/users/me/`, {
+    method: "PUT",
+    headers: getAuthHeaders(),
+    body: JSON.stringify({ discord_webhook }),
+  });
+  if (!res.ok) throw new Error("Failed to update profile");
+  return res.json();
+};
+

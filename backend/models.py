@@ -8,6 +8,7 @@ class User(Base):
     id = Column(Integer, primary_key=True, index=True)
     username = Column(String, unique=True, index=True)
     hashed_password = Column(String)
+    discord_webhook = Column(String, nullable=True)
 
     medications = relationship("Medication", back_populates="owner")
 
@@ -20,6 +21,7 @@ class Medication(Base):
     frequency_hours = Column(Float)
     last_taken = Column(DateTime, nullable=True)
     next_due = Column(DateTime, nullable=True)
+    last_notified = Column(DateTime, nullable=True)
     owner_id = Column(Integer, ForeignKey("users.id"))
 
     owner = relationship("User", back_populates="medications")
